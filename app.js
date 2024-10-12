@@ -9,11 +9,10 @@ const app = express();
 app.use(bodyParser.json());
 app.use('/api/v1', mainRoutes);
 
-module.exports = app;
-
+const PORT = process.env.PORT || 3000;
 sequelize.sync()
     .then(() => {
-        console.log('Database synchronized');
+        app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
     })
     .catch((error) => {
         console.error('Unable to connect to the database:', error);
