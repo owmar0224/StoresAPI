@@ -4,21 +4,32 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github:owmar0224/StoresAPI.git"
   },
   "author": "Omar Fabian",
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "express-validator": "^7.2.0",
+    "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "moment": "^2.30.1",
+    "morgan": "^1.10.0",
     "mysql2": "^3.11.3",
     "nodemon": "^3.1.7",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "sequelize": "^6.37.4"
+    "sequelize": "^6.37.4",
+    "winston": "^3.15.0"
   }
 }

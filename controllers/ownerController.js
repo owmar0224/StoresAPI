@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
 
-exports.registerOwner = async (req, res) => {
+const registerOwner = async (req, res) => {
     const { first_name, last_name, email, password } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -15,7 +15,7 @@ exports.registerOwner = async (req, res) => {
     }
 };
 
-exports.loginOwner = async (req, res) => {
+const loginOwner = async (req, res) => {
     const { email, password } = req.body;
     try {
         const owner = await Owner.findOne({ where: { email } });
@@ -31,7 +31,7 @@ exports.loginOwner = async (req, res) => {
     }
 };
 
-exports.getOwners = async (req, res) => {
+const getOwners = async (req, res) => {
     try {
         const owners = await Owner.findAll();
         const formattedOwners = owners.map(owner => formatOwnerResponse(owner));
@@ -41,7 +41,7 @@ exports.getOwners = async (req, res) => {
     }
 };
 
-exports.getOwnerById = async (req, res) => {
+const getOwnerById = async (req, res) => {
     try {
         const owner = await Owner.findByPk(req.params.id);
         if (!owner) return res.status(404).json({ message: 'Owner not found' });
@@ -52,10 +52,10 @@ exports.getOwnerById = async (req, res) => {
     }
 };
 
-exports.updateOwner = async (req, res) => {
+const updateOwner = async (req, res) => {
     try {
         const { first_name, last_name, email } = req.body;
-        const ownerId = req.ownerId;
+        const ownerId = req.params.id; // Get ownerId from request parameters
         const owner = await Owner.findByPk(ownerId);
 
         if (!owner) return res.status(404).json({ message: 'Owner not found' });
@@ -72,9 +72,9 @@ exports.updateOwner = async (req, res) => {
     }
 };
 
-exports.deleteOwner = async (req, res) => {
+const deleteOwner = async (req, res) => {
     try {
-        const ownerId = req.ownerId;
+        const ownerId = req.params.id; // Get ownerId from request parameters
         const owner = await Owner.findByPk(ownerId);
         
         if (!owner) return res.status(404).json({ message: 'Owner not found' });
@@ -96,4 +96,13 @@ const formatOwnerResponse = (owner) => {
         updatedAt: moment(owner.updatedAt).format('YYYY-MM-DD HH:mm'),
     };
     return formattedOwner;
+};
+
+module.exports = {
+    registerOwner,
+    loginOwner,
+    getOwners,      // Move to Admin
+    getOwnerById,   // Move to Admin then Replace with GetOwnerDetails
+    updateOwner,
+    deleteOwner
 };

@@ -1,5 +1,4 @@
 const { DataTypes } = require('sequelize');
-const { v4: uuidv4 } = require('uuid');
 const sequelize = require('../connection/database');
 
 const Owner = sequelize.define('Owner', {
