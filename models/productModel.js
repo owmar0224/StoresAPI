@@ -19,6 +19,14 @@ const Product = sequelize.define('Product', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    stock_level: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+    },
+    price: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+    },
     status: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,

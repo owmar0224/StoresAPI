@@ -5,7 +5,7 @@ const moment = require('moment');
 
 const createProduct = async (req, res) => {
     const ownerId = req.user.id;
-    const { category_id, product_name, status } = req.body;
+    const { category_id, product_name, status, stock_level, price } = req.body;
     
     try {
         const category = await Category.findOne({
@@ -77,7 +77,7 @@ const getProductById = async (req, res) => {
 const updateProduct = async (req, res) => {
     const ownerId = req.user.id;
     const { id } = req.params;
-    const { category_id, product_name, status } = req.body;
+    const { category_id, product_name, status, stock_level, price } = req.body;
     try {
         const product = await Product.findByPk(id, {
             include: {
@@ -110,7 +110,9 @@ const updateProduct = async (req, res) => {
         }
 
         product.product_name = product_name !== undefined ? product_name : product.product_name;
-        product.status = status !== undefined ? product.status : product.status;
+        product.status = status !== undefined ? status : product.status;
+        product.stock_level = stock_level !== undefined ? stock_level : product.stock_level;
+        product.price = price !== undefined ? price : product.price;
 
         await product.save();
         res.json({ message: 'Product updated successfully', product: formatProduct(product) });
@@ -151,6 +153,8 @@ const formatProduct = (product) => {
         categoryId: product.category_id,
         name: product.product_name,
         status: product.status,
+        stockLevel: product.stock_level,
+        price: product.price,
         createdAt: moment(product.createdAt).format('YYYY-MM-DD HH:mm'),
         updatedAt: moment(product.updatedAt).format('YYYY-MM-DD HH:mm'),
     };
