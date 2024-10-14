@@ -1,4 +1,6 @@
 const Store = require('../models/storeModel');
+const Category = require('../models/categoryModel');
+const Product = require('../models/productModel');
 const moment = require('moment');
 
 const createStore = async (req, res) => {
@@ -13,10 +15,21 @@ const createStore = async (req, res) => {
 };
 
 const getStores = async (req, res) => {
+    const ownerId = req.user.id;
     try {
-        const stores = await Store.findAll({ where: { owner_id: req.user.id } });
-        const formattedStores = stores.map(store => formatStoreResponse(store));
-        res.json(formattedStores);
+        const stores = await Store.findAll({
+            where: { owner_id: ownerId },
+            include: {
+                model: Category,
+                as: 'category',
+                include: {
+                    model: Product,
+                    as: 'product',
+                },
+            },
+        });
+
+        res.json({ stores: stores });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -27,7 +40,7 @@ const getStoreById = async (req, res) => {
         const store = await Store.findByPk(req.params.id, { where: { owner_id: req.user.id } });
         if (!store) return res.status(404).json({ message: 'Store not found' });
         const responseStore = formatStoreResponse(store);
-        res.json(responseStore);
+        res.json({ store: responseStore });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -64,7 +77,7 @@ const deleteStore = async (req, res) => {
 };
 
 const formatStoreResponse = (store) => {
-    return {
+    const formattedStore = {
         id: store.id,
         owner_id: store.owner_id,
         store_name: store.store_name,
@@ -73,6 +86,7 @@ const formatStoreResponse = (store) => {
         createdAt: moment(store.createdAt).format('YYYY-MM-DD HH:mm'),
         updatedAt: moment(store.updatedAt).format('YYYY-MM-DD HH:mm'),
     };
+    return formattedStore;
 };
 
 module.exports = {

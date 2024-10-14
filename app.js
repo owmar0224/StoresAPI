@@ -47,7 +47,7 @@ const PORT = process.env.PORT || 3000;
 
 sequelize
   .sync({
-    alter: true     // Alter Database Tables to Updated Models
+    // alter: true     // Alter Database Tables to Updated Models
     // force: true  // Delete and Recreate Database Tables
   })
   .then(() => {

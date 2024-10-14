@@ -82,6 +82,8 @@ const changePassword = async (req, res) => {
                 products: (category.product || []).map(product => ({
                     id: product.id,
                     name: product.product_name,
+                    stock_level: product.stock_level,
+                    price: product.price,
                     status: product.status,
                 })),
             })),

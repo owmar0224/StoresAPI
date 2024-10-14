@@ -394,6 +394,8 @@ const getOwners = async (req, res) => {
                     products: (category.product || []).map(product => ({
                         id: product.id,
                         name: product.product_name,
+                        stock_level: product.stock_level,
+                        price: product.price,
                         status: product.status,
                     })),
                     status: category.status,
@@ -445,6 +447,8 @@ const getOwnerById = async (req, res) => {
                 products: (category.product || []).map(product => ({
                     id: product.id,
                     name: product.product_name,
+                    stock_level: product.stock_level,
+                    price: product.price,
                     status: product.status,
                 })),
             })),
