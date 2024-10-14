@@ -4,13 +4,12 @@ const ownerController = require('../../controllers/ownerController');
 const passport = require('passport');
 
 // Public Routes
-router.post('/register', ownerController.registerOwner);
 router.post('/login', ownerController.loginOwner);
 
 // Protected Routes using passport.authenticate
-router.get('/all', passport.authenticate('jwt', { session: false }), ownerController.getOwners);
-router.get('/:id', passport.authenticate('jwt', { session: false }), ownerController.getOwnerById);
-router.put('/update/:id', passport.authenticate('jwt', { session: false }), ownerController.updateOwner);
-router.delete('/delete/:id', passport.authenticate('jwt', { session: false }), ownerController.deleteOwner);
+router.put('/change-password', passport.authenticate('owner-rule', { session: false }), ownerController.changePassword);
+router.get('/details', passport.authenticate('owner-rule', { session: false }), ownerController.getOwnerDetails);
+router.put('/update', passport.authenticate('owner-rule', { session: false }), ownerController.updateOwner);
+router.put('/deactivate', passport.authenticate('owner-rule', { session: false }), ownerController.deactivateOwner);
 
 module.exports = router;

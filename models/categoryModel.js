@@ -29,8 +29,4 @@ const Category = sequelize.define('Category', {
     tableName: 'categories',
 });
 
-Category.sync({ alter: true })
-    .then(() => console.log('Category table synced successfully.'))
-    .catch((error) => console.log('Error syncing Category table: ', error));
-
 module.exports = Category;

@@ -11,6 +11,7 @@ const morgan = require('morgan');
 const winston = require('winston');
 const passport = require('passport');
 require('./middlewares/passport')(passport);
+require('./models/association/associations');
 
 const app = express();
 
@@ -44,7 +45,11 @@ app.use('/api/v1', mainRoutes);
 
 const PORT = process.env.PORT || 3000;
 
-sequelize.sync()
+sequelize
+  .sync({
+    alter: true     // Alter Database Tables to Updated Models
+    // force: true  // Delete and Recreate Database Tables
+  })
   .then(() => {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })

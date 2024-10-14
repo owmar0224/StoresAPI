@@ -24,7 +24,7 @@ const getStores = async (req, res) => {
 
 const getStoreById = async (req, res) => {
     try {
-        const store = await Store.findByPk(req.params.id);
+        const store = await Store.findByPk(req.params.id, { where: { owner_id: req.user.id } });
         if (!store) return res.status(404).json({ message: 'Store not found' });
         const responseStore = formatStoreResponse(store);
         res.json(responseStore);
@@ -36,7 +36,7 @@ const getStoreById = async (req, res) => {
 const updateStore = async (req, res) => {
     const { store_name, location, status } = req.body;
     try {
-        const store = await Store.findByPk(req.params.id);
+        const store = await Store.findByPk(req.params.id, { where: { owner_id: req.user.id } });
         if (!store) return res.status(404).json({ message: 'Store not found' });
 
         store.store_name = store_name !== undefined ? store_name : store.store_name;
@@ -53,7 +53,7 @@ const updateStore = async (req, res) => {
 
 const deleteStore = async (req, res) => {
     try {
-        const store = await Store.findByPk(req.params.id);
+        const store = await Store.findByPk(req.params.id, { where: { owner_id: req.user.id } });
         if (!store) return res.status(404).json({ message: 'Store not found' });
 
         await store.destroy();

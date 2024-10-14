@@ -1,25 +1,21 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../connection/database');
 
-const Store = sequelize.define('Store', {
+const Product = sequelize.define('Product', {
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
     },
-    owner_id: {
+    category_id: {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-            model: 'owners',
+            model: 'categories',
             key: 'id',
         },
     },
-    store_name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    location: {
+    product_name: {
         type: DataTypes.STRING,
         allowNull: false,
     },
@@ -30,7 +26,7 @@ const Store = sequelize.define('Store', {
 }, {
     timestamps: true,
     underscored: true,
-    tableName: 'stores',
+    tableName: 'products',
 });
 
-module.exports = Store;
+module.exports = Product;

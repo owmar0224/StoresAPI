@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../connection/database');
 
-const Owner = sequelize.define('Owner', {
+const Admin = sequelize.define('Admin', {
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
@@ -21,7 +21,7 @@ const Owner = sequelize.define('Owner', {
         unique: true,
         validate: {
             isEmail: true,
-        }
+        },
     },
     password: {
         type: DataTypes.STRING,
@@ -29,12 +29,20 @@ const Owner = sequelize.define('Owner', {
     },
     status: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true,
+        defaultValue: false,
+    },
+    verification_code: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    reset_token: {
+        type: DataTypes.STRING,
+        allowNull: true,
     }
 }, {
     timestamps: true,
     underscored: true,
-    tableName: 'owners'
+    tableName: 'admins',
 });
 
-module.exports = Owner;
+module.exports = Admin;
