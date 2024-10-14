@@ -5,7 +5,11 @@ const moment = require('moment');
 
 const createProduct = async (req, res) => {
     const ownerId = req.user.id;
-    const { category_id, product_name, status, stock_level, price } = req.body;
+    const { category_id, product_name, stock_level, price, status } = req.body;
+
+    if (!category_id || !product_name || price === undefined || price === null) {
+        return res.status(400).json({ message: 'Validation error: category_id, product_name, and price are required.' });
+    }
     
     try {
         const category = await Category.findOne({
@@ -21,7 +25,7 @@ const createProduct = async (req, res) => {
             return res.status(403).json({ message: 'You do not have permission to create a product in this category.' });
         }
 
-        const newProduct = await Product.create({ category_id, product_name, status });
+        const newProduct = await Product.create({ category_id, product_name, stock_level, price, status });
         res.status(201).json({ message: 'Product created successfully', product: formatProduct(newProduct) });
         
     } catch (error) {
