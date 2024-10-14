@@ -26,7 +26,19 @@ const createProduct = async (req, res) => {
         }
 
         const newProduct = await Product.create({ category_id, product_name, stock_level, price, status });
-        res.status(201).json({ message: 'Product created successfully', product: formatProduct(newProduct) });
+
+        const productWithCategory = await Product.findByPk(newProduct.id, {
+            include: {
+                model: Category,
+                as: 'category',
+                include: {
+                    model: Store,
+                    as: 'store',
+                },
+            },
+        });
+
+        res.status(201).json({ message: 'Product created successfully', product: formatProduct(productWithCategory) });
         
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -82,18 +94,20 @@ const updateProduct = async (req, res) => {
     const ownerId = req.user.id;
     const { id } = req.params;
     const { category_id, product_name, status, stock_level, price } = req.body;
+
     try {
         const product = await Product.findByPk(id, {
             include: {
-              model: Category,
-              as: 'category',
-              include: {
-                model: Store,
-                as: 'store',
-                where: { owner_id: ownerId},
-              }
-            }
-          });
+                model: Category,
+                as: 'category',
+                include: {
+                    model: Store,
+                    as: 'store',
+                    where: { owner_id: ownerId },
+                },
+            },
+        });
+
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
@@ -104,7 +118,7 @@ const updateProduct = async (req, res) => {
                     model: Store,
                     as: 'store',
                     where: { owner_id: ownerId },
-                }
+                },
             });
 
             if (!category) {
@@ -119,11 +133,25 @@ const updateProduct = async (req, res) => {
         product.price = price !== undefined ? price : product.price;
 
         await product.save();
-        res.json({ message: 'Product updated successfully', product: formatProduct(product) });
+
+        const updatedProduct = await Product.findByPk(product.id, {
+            include: {
+                model: Category,
+                as: 'category',
+                include: {
+                    model: Store,
+                    as: 'store',
+                },
+            },
+        });
+
+        res.json({ message: 'Product updated successfully', product: formatProduct(updatedProduct) });
+
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 };
+
 
 const deleteProduct = async (req, res) => {
     const ownerId = req.user.id;
@@ -153,17 +181,24 @@ const deleteProduct = async (req, res) => {
 
 const formatProduct = (product) => {
     return {
-        id: product.id,
-        categoryId: product.category_id,
-        name: product.product_name,
-        status: product.status,
-        stockLevel: product.stock_level,
-        price: product.price,
-        createdAt: moment(product.createdAt).format('YYYY-MM-DD HH:mm'),
-        updatedAt: moment(product.updatedAt).format('YYYY-MM-DD HH:mm'),
+      id: product.id,
+      category: product.category ? {
+        id: product.category.id,
+        name: product.category.category_name,
+        store: product.category.store ? {
+          id: product.category.store.id,
+          name: product.category.store.store_name,
+        } : null
+      } : null,
+      name: product.product_name,
+      status: product.status,
+      stockLevel: product.stock_level,
+      price: product.price,
+      createdAt: moment(product.createdAt).format('YYYY-MM-DD HH:mm'),
+      updatedAt: moment(product.updatedAt).format('YYYY-MM-DD HH:mm'),
     };
-};
-
+  };
+  
 module.exports = {
     createProduct,
     getProducts,
