@@ -23,6 +23,10 @@ const Store = sequelize.define('Store', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    image: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     status: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,

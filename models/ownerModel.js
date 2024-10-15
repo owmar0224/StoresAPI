@@ -27,10 +27,14 @@ const Owner = sequelize.define('Owner', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    image: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     status: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
-    }
+    },
 }, {
     timestamps: true,
     underscored: true,

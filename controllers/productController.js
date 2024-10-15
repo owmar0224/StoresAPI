@@ -2,6 +2,8 @@ const Product = require('../models/productModel');
 const Category = require('../models/categoryModel');
 const Store = require('../models/storeModel');
 const moment = require('moment');
+const path = require('path');
+const fs = require('fs');
 
 const createProduct = async (req, res) => {
     const ownerId = req.user.id;
@@ -10,7 +12,7 @@ const createProduct = async (req, res) => {
     if (!category_id || !product_name || price === undefined || price === null) {
         return res.status(400).json({ message: 'Validation error: category_id, product_name, and price are required.' });
     }
-    
+
     try {
         const category = await Category.findOne({
             where: { id: category_id },
@@ -25,9 +27,35 @@ const createProduct = async (req, res) => {
             return res.status(403).json({ message: 'You do not have permission to create a product in this category.' });
         }
 
-        const newProduct = await Product.create({ category_id, product_name, stock_level, price, status });
+        const storeId = category.store.id;
 
-        const productWithCategory = await Product.findByPk(newProduct.id, {
+        const product = await Product.create({
+            category_id,
+            product_name,
+            stock_level,
+            price,
+            status
+        }, { returning: true });
+
+        if (req.file) {
+            const productImageDir = path.join(__dirname, `../public/resources/uploads/owners/${ownerId}/stores/${storeId}/categories/${product.category_id}/products/${product.id}/`);
+            const tempFilePath = req.file.path;
+
+            if (!fs.existsSync(productImageDir)) {
+                fs.mkdirSync(productImageDir, { recursive: true });
+            }
+
+            const fileExtension = path.extname(req.file.originalname).toLowerCase();
+            const newFileName = `${product.id}-${Date.now()}${fileExtension}`;
+            const finalFilePath = path.join(productImageDir, newFileName);
+
+            fs.renameSync(tempFilePath, finalFilePath);
+
+            product.image = newFileName;
+            await product.save();
+        }
+
+        const productWithCategory = await Product.findByPk(product.id, {
             include: {
                 model: Category,
                 as: 'category',
@@ -38,8 +66,8 @@ const createProduct = async (req, res) => {
             },
         });
 
-        res.status(201).json({ message: 'Product created successfully', product: formatProduct(productWithCategory) });
-        
+        res.status(201).json({ message: 'Product created successfully', product: formatProduct(productWithCategory, ownerId) });
+
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -132,6 +160,33 @@ const updateProduct = async (req, res) => {
         product.stock_level = stock_level !== undefined ? stock_level : product.stock_level;
         product.price = price !== undefined ? price : product.price;
 
+        const oldImage = product.image;
+
+        if (req.file) {
+            const productImageDir = path.join(__dirname, `../public/resources/uploads/owners/${ownerId}/stores/${product.category.store.id}/categories/${product.category_id}/products/${product.id}/`);
+            const tempFilePath = req.file.path;
+
+            if (oldImage) {
+                const oldImagePath = path.join(productImageDir, oldImage);
+                if (fs.existsSync(oldImage)){
+                    fs.unlinkSync(oldImagePath);
+                }
+            }
+
+            if (!fs.existsSync(productImageDir)) {
+                fs.mkdirSync(productImageDir, { recursive: true });
+            }
+
+            const fileExtension = path.extname(req.file.originalname).toLowerCase();
+            const newFileName = `${product.id}-${Date.now()}${fileExtension}`;
+            const finalFilePath = path.join(productImageDir, newFileName);
+
+            fs.renameSync(tempFilePath, finalFilePath);
+
+            product.image = newFileName;
+
+        }
+
         await product.save();
 
         const updatedProduct = await Product.findByPk(product.id, {
@@ -170,6 +225,15 @@ const deleteProduct = async (req, res) => {
           });
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
+        };
+
+        const productImageDir = path.join(__dirname, `../public/resources/uploads/owners/${ownerId}/stores/${product.category.store.id}/categories/${product.category_id}/products/${product.id}/`);
+
+        if (product.image) {
+            const imagePath = path.join(productImageDir, product.image);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
         }
 
         await product.destroy();
@@ -179,23 +243,26 @@ const deleteProduct = async (req, res) => {
     }
 };
 
-const formatProduct = (product) => {
+const formatProduct = (product, ownerId) => {
     return {
       id: product.id,
+      name: product.product_name,
+      status: product.status,
+      stockLevel: product.stock_level,
+      price: product.price,
+      status: product.status,
+      createdAt: moment(product.createdAt).format('YYYY-MM-DD HH:mm'),
+      updatedAt: moment(product.updatedAt).format('YYYY-MM-DD HH:mm'),
+      image: product.image ? path.join(__dirname, `../public/resources/uploads/owners/${ownerId}/stores/${product.category.store.id}/categories/${product.category.id}/products/${product.id}`, product.image) : null,
       category: product.category ? {
         id: product.category.id,
         name: product.category.category_name,
         store: product.category.store ? {
           id: product.category.store.id,
           name: product.category.store.store_name,
+          location: product.category.store.location,
         } : null
       } : null,
-      name: product.product_name,
-      status: product.status,
-      stockLevel: product.stock_level,
-      price: product.price,
-      createdAt: moment(product.createdAt).format('YYYY-MM-DD HH:mm'),
-      updatedAt: moment(product.updatedAt).format('YYYY-MM-DD HH:mm'),
     };
   };
   

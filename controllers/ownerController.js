@@ -5,6 +5,8 @@ const Product = require('../models/productModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
+const fs = require('fs');
+const path = require('path');
 
 const loginOwner = async (req, res) => {
     const { email, password } = req.body;
@@ -71,23 +73,36 @@ const changePassword = async (req, res) => {
             },
         });
 
-        const formattedStores = (stores || []).map(store => ({
-            id: store.id,
-            name: store.store_name,
-            status: store.status,
-            categories: (store.category || []).map(category => ({
-                id: category.id,
-                name: category.category_name,
-                status: category.status,
-                products: (category.product || []).map(product => ({
-                    id: product.id,
-                    name: product.product_name,
-                    stock_level: product.stock_level,
-                    price: product.price,
-                    status: product.status,
+        const formattedStores = (stores || []).map(store =>
+            ({
+                id: store.id,
+                owner_id: store.owner_id,
+                store_name: store.store_name,
+                location: store.location,
+                image: path.join(__dirname, `../public/resources/uploads/owners/${store.owner_id}/stores/${store.id}/`, store.image),
+                status: store.status,
+                createdAt: moment(store.createdAt).format('YYYY-MM-DD HH:mm'),
+                updatedAt: moment(store.updatedAt).format('YYYY-MM-DD HH:mm'),
+                categories: (store.category || []).map(category => ({
+                    id: category.id,
+                    storeId: category.store_id,
+                    name: category.category_name,
+                    image: category.image ? path.join(__dirname, `../public/resources/uploads/owners/${store.owner_id}/stores/${category.store_id}/`, category.image) : null,
+                    status: category.status,
+                    createdAt: moment(category.createdAt).format('YYYY-MM-DD HH:mm'),
+                    updatedAt: moment(category.updatedAt).format('YYYY-MM-DD HH:mm'),
+                    products: (category.product || []).map(product => ({
+                        id: product.id,
+                        name: product.product_name,
+                        stock_level: product.stock_level,
+                        price: product.price,
+                        status: product.status,
+                        createdAt: moment(product.createdAt).format('YYYY-MM-DD HH:mm'),
+                        updatedAt: moment(product.updatedAt).format('YYYY-MM-DD HH:mm'),
+                    })),
                 })),
-            })),
-        }));
+            })
+            );
 
         const response = formatOwnerResponse(owner, formattedStores);
         res.json({ owner: response });
@@ -107,7 +122,36 @@ const updateOwner = async (req, res) => {
         owner.first_name = first_name !== undefined ? first_name : owner.first_name;
         owner.last_name = last_name !== undefined ? last_name : owner.last_name;
 
+        const oldImage = owner.image;
+
+        if (req.file) {
+            const ownerImageDir = path.join(__dirname, `../public/resources/uploads/owners/${ownerId}/`);
+            const tempFilePath = req.file.path;
+
+            if (oldImage) {
+                const oldImagePath = path.join(ownerImageDir, oldImage);
+                
+                if (fs.existsSync(oldImagePath)) {
+                    fs.unlinkSync(oldImagePath);
+                }
+            }
+
+            if (!fs.existsSync(ownerImageDir)) {
+                fs.mkdirSync(ownerImageDir, { recursive: true });
+            }
+
+            const fileExtension = path.extname(req.file.originalname).toLowerCase();
+            const newFileName = `${ownerId}-${Date.now()}${fileExtension}`;
+            const finalFilePath = path.join(ownerImageDir, newFileName);
+
+            fs.renameSync(tempFilePath, finalFilePath);
+
+            owner.image = newFileName;
+            
+        }
+
         await owner.save();
+
         const responseOwner = formatOwnerResponse(owner);
         res.json({ message: 'Owner updated!', owner: responseOwner });
     } catch (error) {
@@ -137,6 +181,7 @@ const formatOwnerResponse = (owner, formattedStores) => {
       first_name: owner.first_name,
       last_name: owner.last_name,
       email: owner.email,
+      image: path.join(__dirname, `../public/resources/uploads/owners/${owner.id}/`, owner.image),
       status: owner.status,
       createdAt: moment(owner.createdAt).format('YYYY-MM-DD HH:mm'),
       updatedAt: moment(owner.updatedAt).format('YYYY-MM-DD HH:mm'),

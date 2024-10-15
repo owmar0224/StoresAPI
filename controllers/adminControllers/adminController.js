@@ -8,6 +8,7 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
+const path = require('path');
 
 const registerAdmin = async (req, res) => {
     const { first_name, last_name, email, password } = req.body;
@@ -385,23 +386,36 @@ const getOwners = async (req, res) => {
                 },
             });
 
-            const formattedStores = stores.map(store => ({
-                id: store.id,
-                name: store.store_name,
-                categories: (store.category || []).map(category => ({
-                    id: category.id,
-                    name: category.category_name,
-                    products: (category.product || []).map(product => ({
-                        id: product.id,
-                        name: product.product_name,
-                        stock_level: product.stock_level,
-                        price: product.price,
-                        status: product.status,
+            const formattedStores = (stores || []).map(store =>
+                ({
+                    id: store.id,
+                    owner_id: store.owner_id,
+                    store_name: store.store_name,
+                    location: store.location,
+                    image: path.join(__dirname, `../public/resources/uploads/owners/${store.owner_id}/stores/${store.id}/`, store.image),
+                    status: store.status,
+                    createdAt: moment(store.createdAt).format('YYYY-MM-DD HH:mm'),
+                    updatedAt: moment(store.updatedAt).format('YYYY-MM-DD HH:mm'),
+                    categories: (store.category || []).map(category => ({
+                        id: category.id,
+                        storeId: category.store_id,
+                        name: category.category_name,
+                        image: category.image ? path.join(__dirname, `../public/resources/uploads/owners/${store.owner_id}/stores/${category.store_id}/`, category.image) : null,
+                        status: category.status,
+                        createdAt: moment(category.createdAt).format('YYYY-MM-DD HH:mm'),
+                        updatedAt: moment(category.updatedAt).format('YYYY-MM-DD HH:mm'),
+                        products: (category.product || []).map(product => ({
+                            id: product.id,
+                            name: product.product_name,
+                            stock_level: product.stock_level,
+                            price: product.price,
+                            status: product.status,
+                            createdAt: moment(product.createdAt).format('YYYY-MM-DD HH:mm'),
+                            updatedAt: moment(product.updatedAt).format('YYYY-MM-DD HH:mm'),
+                        })),
                     })),
-                    status: category.status,
-                })),
-                status: store.status,
-            }));
+                })
+                );
 
             return formatOwnerResponse(owner, formattedStores);
         }));
@@ -436,23 +450,36 @@ const getOwnerById = async (req, res) => {
             },
         });
 
-        const formattedStores = (stores || []).map(store => ({
-            id: store.id,
-            name: store.store_name,
-            status: store.status,
-            categories: (store.category || []).map(category => ({
-                id: category.id,
-                name: category.category_name,
-                status: category.status,
-                products: (category.product || []).map(product => ({
-                    id: product.id,
-                    name: product.product_name,
-                    stock_level: product.stock_level,
-                    price: product.price,
-                    status: product.status,
+        const formattedStores = (stores || []).map(store =>
+            ({
+                id: store.id,
+                owner_id: store.owner_id,
+                store_name: store.store_name,
+                location: store.location,
+                image: path.join(__dirname, `../public/resources/uploads/owners/${store.owner_id}/stores/${store.id}/`, store.image),
+                status: store.status,
+                createdAt: moment(store.createdAt).format('YYYY-MM-DD HH:mm'),
+                updatedAt: moment(store.updatedAt).format('YYYY-MM-DD HH:mm'),
+                categories: (store.category || []).map(category => ({
+                    id: category.id,
+                    storeId: category.store_id,
+                    name: category.category_name,
+                    image: category.image ? path.join(__dirname, `../public/resources/uploads/owners/${store.owner_id}/stores/${category.store_id}/`, category.image) : null,
+                    status: category.status,
+                    createdAt: moment(category.createdAt).format('YYYY-MM-DD HH:mm'),
+                    updatedAt: moment(category.updatedAt).format('YYYY-MM-DD HH:mm'),
+                    products: (category.product || []).map(product => ({
+                        id: product.id,
+                        name: product.product_name,
+                        stock_level: product.stock_level,
+                        price: product.price,
+                        status: product.status,
+                        createdAt: moment(product.createdAt).format('YYYY-MM-DD HH:mm'),
+                        updatedAt: moment(product.updatedAt).format('YYYY-MM-DD HH:mm'),
+                    })),
                 })),
-            })),
-        }));
+            })
+            );
 
         const response = formatOwnerResponse(owner, formattedStores);
         res.json({ owner: response });
@@ -481,6 +508,7 @@ const formatOwnerResponse = (owner, formattedStores) => {
         first_name: owner.first_name,
         last_name: owner.last_name,
         email: owner.email,
+        image: path.join(__dirname, `../public/resources/uploads/owners/${owner.id}/`, owner.image),
         status: owner.status,
         createdAt: moment(owner.createdAt).format('YYYY-MM-DD HH:mm'),
         updatedAt: moment(owner.updatedAt).format('YYYY-MM-DD HH:mm'),
