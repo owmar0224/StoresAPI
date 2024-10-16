@@ -85,7 +85,7 @@ Authorization: Bearer <TOKEN>
 ##### Register Admin
 - **POST** `/api/v1/admin/register`
 - **Description**: Registers a new Admin.
-- **Requires Authentication?**: No
+- **Bearer Token**: No
 - **Request Body**:
   ```json
   {
@@ -99,7 +99,7 @@ Authorization: Bearer <TOKEN>
 ##### Resend Verification Email
 - **POST** `/api/v1/admin/resend-verification`
 - **Description**: Resends the email verification link.
-- **Requires Authentication?**: No
+- **Bearer Token**: No
 - **Request Body**:
   ```json
   {
@@ -110,7 +110,7 @@ Authorization: Bearer <TOKEN>
 ##### Verify Admin Email
 - **POST** `/api/v1/admin/verify`
 - **Description**: Verifies an Admin's email using a verification code.
-- **Requires Authentication?**: No
+- **Bearer Token**: No
 - **Request Body**:
   ```json
   {
@@ -122,7 +122,7 @@ Authorization: Bearer <TOKEN>
 ##### Admin Login
 - **POST** `/api/v1/admin/login`
 - **Description**: Logs in an Admin.
-- **Requires Authentication?**: No
+- **Bearer Token**: No
 - **Request Body**:
   ```json
   {
@@ -134,7 +134,7 @@ Authorization: Bearer <TOKEN>
 ##### Forgot Password
 - **POST** `/api/v1/admin/forgot-password`
 - **Description**: Initiates a password reset for an Admin.
-- **Requires Authentication?**: No
+- **Bearer Token**: No
 - **Request Body**:
   ```json
   {
@@ -145,7 +145,7 @@ Authorization: Bearer <TOKEN>
 ##### Reset Admin Password
 - **POST** `/api/v1/admin/reset-password`
 - **Description**: Resets the Admin's password using a token.
-- **Requires Authentication?**: No
+- **Bearer Token**: No
 - **Request Body**:
   ```json
   {
@@ -157,7 +157,7 @@ Authorization: Bearer <TOKEN>
 ##### Change Admin Password
 - **POST** `/api/v1/admin/change-password`
 - **Description**: Changes the Admin's password.
-- **Requires Authentication?**: **Yes (admin_token)**
+- **Bearer Token**: **admin_token**
 - **Request Body**:
   ```json
   {
@@ -169,17 +169,17 @@ Authorization: Bearer <TOKEN>
 ##### Get All Admins
 - **GET** `/api/v1/admin/all`
 - **Description**: Fetches all registered Admins.
-- **Requires Authentication?**: **Yes (admin_token)**
+- **Bearer Token**: **admin_token**
 
 ##### Get Admin by ID
 - **GET** `/api/v1/admin/:id`
 - **Description**: Fetches details of an Admin by their ID.
-- **Requires Authentication?**: **Yes (admin_token)**
+- **Bearer Token**: **admin_token**
 
 ##### Update Admin
 - **PUT** `/api/v1/admin/update/:id`
 - **Description**: Updates an Admin's details by their ID.
-- **Requires Authentication?**: **Yes (admin_token)**
+- **Bearer Token**: **admin_token**
 - **Request Body**:
   ```json
   {
@@ -192,14 +192,14 @@ Authorization: Bearer <TOKEN>
 ##### Delete Admin
 - **DELETE** `/api/v1/admin/delete/:id`
 - **Description**: Deletes an Admin account by ID.
-- **Requires Authentication?**: **Yes (admin_token)**
+- **Bearer Token**: **admin_token**
 
 #### For Owner Accounts
 
 ##### Create Owner
 - **POST** `/api/v1/admin/owners/register`
 - **Description**: Registers a new store owner.
-- **Requires Authentication?**: **Yes (admin_token)**
+- **Bearer Token**: **admin_token**
 - **Request Body**:
   ```json
   {
@@ -212,7 +212,7 @@ Authorization: Bearer <TOKEN>
 ##### Reset Owner Password
 - **PUT** `/api/v1/admin/owners/reset-password`
 - **Description**: Resets an Owner's password.
-- **Requires Authentication?**: **Yes (admin_token)**
+- **Bearer Token**: **admin_token**
 - **Request Body**:
   ```json
   {
@@ -223,17 +223,17 @@ Authorization: Bearer <TOKEN>
 ##### Get All Owners
 - **GET** `/api/v1/admin/owners/all`
 - **Description**: Fetches all store owners.
-- **Requires Authentication?**: **Yes (admin_token)**
+- **Bearer Token**: **admin_token**
 
 ##### Get Owner by ID
 - **GET** `/api/v1/admin/owners/:id`
 - **Description**: Fetches details of an Owner by their ID.
-- **Requires Authentication?**: **Yes (admin_token)**
+- **Bearer Token**: **admin_token**
 
 ##### Delete Owner
 - **DELETE** `/api/v1/admin/owners/delete/:id`
 - **Description**: Deletes an Owner account by ID.
-- **Requires Authentication?**: **Yes (admin_token)**
+- **Bearer Token**: **admin_token**
 
 ---
 
@@ -242,7 +242,7 @@ Authorization: Bearer <TOKEN>
 ##### Login Owner
 - **POST** `/api/v1/owners/login`
 - **Description**: Logs in a store owner.
-- **Requires Authentication?**: No
+- **Bearer Token**: No
 - **Request Body**:
   ```json
   {
@@ -254,12 +254,12 @@ Authorization: Bearer <TOKEN>
 ##### Get Owner Details
 - **GET** `/api/v1/owners/details`
 - **Description**: Fetches the logged-in owner's details.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ##### Change Password
 - **PUT** `/api/v1/owners/change-password`
 - **Description**: Changes the owner's password.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 - **Request Body**:
   ```json
   {
@@ -271,7 +271,7 @@ Authorization: Bearer <TOKEN>
 ##### Update Owner
 - **PUT** `/api/v1/owners/update`
 - **Description**: Updates an Owner's details.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 - **Request Body (form-data)**:
   - `first_name`: Owner's first name.
   - `last_name`: Owner's last name.
@@ -280,7 +280,7 @@ Authorization: Bearer <TOKEN>
 ##### Deactivate Owner
 - **PUT** `/api/v1/owners/deactivate`
 - **Description**: Deactivates an Owner account.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ---
 
@@ -289,7 +289,7 @@ Authorization: Bearer <TOKEN>
 ##### Create Store
 - **POST** `/api/v1/stores/create`
 - **Description**: Creates a new store.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 - **Request Body (form-data)**:
   - `store_name`: Name of the store.
   - `location`: Store location.
@@ -301,17 +301,17 @@ status`: Store status (true/false).
 ##### Get All Stores
 - **GET** `/api/v1/stores/all`
 - **Description**: Fetches all stores.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ##### Get Store by ID
 - **GET** `/api/v1/stores/:id`
 - **Description**: Fetches a specific store by ID.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ##### Update Store
 - **PUT** `/api/v1/stores/update/:id`
 - **Description**: Updates a store's details.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 - **Request Body**:
   ```json
   {
@@ -324,7 +324,7 @@ status`: Store status (true/false).
 ##### Delete Store
 - **DELETE** `/api/v1/stores/delete/:id`
 - **Description**: Deletes a store by ID.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ---
 
@@ -333,7 +333,7 @@ status`: Store status (true/false).
 ##### Create Category
 - **POST** `/api/v1/categories/create`
 - **Description**: Creates a new category.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 - **Request Body (form-data)**:
   - `store_id`: ID of the store.
   - `category_name`: Name of the category.
@@ -343,22 +343,22 @@ status`: Store status (true/false).
 ##### Get All Categories
 - **GET** `/api/v1/categories/all`
 - **Description**: Fetches all categories.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ##### Get Category by ID
 - **GET** `/api/v1/categories/:id`
 - **Description**: Fetches a specific category by ID.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ##### Get Categories by Store ID
 - **GET** `/api/v1/categories/store/:store_id`
 - **Description**: Fetches all categories for a given store.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ##### Update Category
 - **PUT** `/api/v1/categories/update/:id`
 - **Description**: Updates a category.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 - **Request Body (form-data)**:
   - `category_name`: Updated name of the category.
   - `status`: Updated status of the category.
@@ -367,7 +367,7 @@ status`: Store status (true/false).
 ##### Delete Category
 - **DELETE** `/api/v1/categories/delete/:id`
 - **Description**: Deletes a category by ID.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ---
 
@@ -376,7 +376,7 @@ status`: Store status (true/false).
 ##### Create Product
 - **POST** `/api/v1/products/create`
 - **Description**: Creates a new product.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 - **Request Body (form-data)**:
   - `category_id`: ID of the category.
   - `product_name`: Name of the product.
@@ -388,17 +388,17 @@ status`: Store status (true/false).
 ##### Get All Products
 - **GET** `/api/v1/products/all`
 - **Description**: Fetches all products.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ##### Get Product by ID
 - **GET** `/api/v1/products/:id`
 - **Description**: Fetches a specific product by ID.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ##### Update Product
 - **PUT** `/api/v1/products/update/:id`
 - **Description**: Updates a product.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 - **Request Body (form-data)**:
   - `category_id`: Updated category ID.
   - `product_name`: Updated product name.
@@ -410,7 +410,7 @@ status`: Store status (true/false).
 ##### Delete Product
 - **DELETE** `/api/v1/products/delete/:id`
 - **Description**: Deletes a product by ID.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ---
 
@@ -419,7 +419,7 @@ status`: Store status (true/false).
 ##### Create Sale
 - **POST** `/api/v1/sales/create`
 - **Description**: Creates a new sale.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 - **Request Body**:
   ```json
   {
@@ -435,32 +435,32 @@ status`: Store status (true/false).
 ##### Get All Sales
 - **GET** `/api/v1/sales/all`
 - **Description**: Fetches all sales.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ##### Get Sale by ID
 - **GET** `/api/v1/sales/:id`
 - **Description**: Fetches a specific sale by ID.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ##### Update Sale
 - **PUT** `/api/v1/sales/update/:id`
 - **Description**: Updates a sale by ID.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ##### Delete Sale
 - **DELETE** `/api/v1/sales/delete/:id`
 - **Description**: Deletes a sale by ID.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ##### Get Sales by Store ID
 - **GET** `/api/v1/sales/stores/:store_id`
 - **Description**: Fetches all sales for a specific store.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ##### Get Sales by Product ID
 - **GET** `/api/v1/sales/products/:product_id`
 - **Description**: Fetches all sales for a specific product.
-- **Requires Authentication?**: **Yes (owner_token)**
+- **Bearer Token**: **owner_token**
 
 ---
 
