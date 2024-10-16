@@ -1,9 +1,11 @@
-const Category = require('../models/categoryModel');
 const Store = require('../models/storeModel');
+const Category = require('../models/categoryModel');
 const Product = require('../models/productModel');
+const Sales = require('../models/salesModel');
 const moment = require('moment');
 const path = require('path');
 const fs = require('fs');
+const sequelize = require('../connection/database');
 
 const createCategory = async (req, res) => {
   const ownerId = req.user.id;
@@ -250,7 +252,9 @@ const updateCategory = async (req, res) => {
 
 const deleteCategory = async (req, res) => {
   const ownerId = req.user.id;
-  const { id } = req.params;
+  const id = req.params.id;
+
+  const transaction = await sequelize.transaction();
   try {
     const category = await Category.findByPk(id, {
       include: {
@@ -258,23 +262,33 @@ const deleteCategory = async (req, res) => {
         as: 'store',
         where: { owner_id: ownerId },
       },
+      transaction
     });
+
     if (!category) {
+      await transaction.rollback();
       return res.status(404).json({ message: 'Category not found' });
-    };
-
-    const categoryImageDir = path.join(__dirname, `../public/resources/uploads/owners/${ownerId}/stores/${category.store_id}/categories/${category.id}/`);
-
-    if (category.image) {
-      const imagePath = path.join(categoryImageDir, category.image);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
     }
 
-    await category.destroy();
-    res.json({ message: 'Category deleted successfully' });
+    const products = await Product.findAll({ where: { category_id: category.id }, transaction });
+
+    for (const product of products) {
+      await Sales.destroy({ where: { product_id: product.id }, transaction });
+    }
+
+    await Product.destroy({ where: { category_id: category.id }, transaction });
+
+    const categoryImageDir = path.join(__dirname, `../public/resources/uploads/owners/${ownerId}/stores/${category.store.id}/categories/${category.id}/`);
+    if (fs.existsSync(categoryImageDir)) {
+      fs.rmSync(categoryImageDir, { recursive: true, force: true });
+    }
+
+    await category.destroy({ transaction });
+
+    await transaction.commit();
+    res.json({ message: 'Category and all associated data deleted successfully!' });
   } catch (error) {
+    await transaction.rollback();
     res.status(400).json({ error: error.message });
   }
 };

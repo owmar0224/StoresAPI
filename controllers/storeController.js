@@ -1,9 +1,11 @@
 const Store = require('../models/storeModel');
 const Category = require('../models/categoryModel');
 const Product = require('../models/productModel');
+const Sales = require('../models/salesModel');
 const moment = require('moment');
 const path = require('path');
 const fs = require('fs');
+const sequelize = require('../connection/database');
 
 const createStore = async (req, res) => {
     const ownerId = req.user.id;
@@ -161,25 +163,45 @@ const updateStore = async (req, res) => {
 
 const deleteStore = async (req, res) => {
     const ownerId = req.user.id;
-    const { id } = req.params;
-    try {
-        const store = await Store.findByPk(req.params.id, {
-            where: { owner_id: req.user.id }
-        });
-        if (!store) return res.status(404).json({ message: 'Store not found' });
+    const id = req.params.id;
 
-        const storeImageDir = path.join(__dirname, `../public/resources/uploads/owners/${ownerId}/stores/${store.id}/`);
-        
-        if (store.image) {
-            const imagePath = path.join(storeImageDir, store.image);
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
-            }
+    const transaction = await sequelize.transaction();
+    try {
+        const store = await Store.findByPk(id, {
+            where: { owner_id: ownerId },
+            transaction
+        });
+
+        if (!store) {
+            await transaction.rollback();
+            return res.status(404).json({ message: 'Store not found' });
         }
 
-        await store.destroy();
-        res.json({ message: 'Store deleted!' });
+        const categories = await Category.findAll({ where: { store_id: store.id }, transaction });
+
+        for (const category of categories) {
+            const products = await Product.findAll({ where: { category_id: category.id }, transaction });
+
+            for (const product of products) {
+                await Sales.destroy({ where: { product_id: product.id }, transaction });
+            }
+
+            await Product.destroy({ where: { category_id: category.id }, transaction });
+        }
+
+        await Category.destroy({ where: { store_id: store.id }, transaction });
+
+        const storeImageDir = path.join(__dirname, `../public/resources/uploads/owners/${ownerId}/stores/${store.id}/`);
+        if (fs.existsSync(storeImageDir)) {
+            fs.rmSync(storeImageDir, { recursive: true, force: true });
+        }
+
+        await store.destroy({ transaction });
+
+        await transaction.commit();
+        res.json({ message: 'Store and all associated data deleted!' });
     } catch (error) {
+        await transaction.rollback();
         res.status(400).json({ error: error.message });
     }
 };

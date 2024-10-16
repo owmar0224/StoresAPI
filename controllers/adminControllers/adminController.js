@@ -3,12 +3,15 @@ const Owner = require('../../models/ownerModel');
 const Store = require('../../models/storeModel');
 const Category = require('../../models/categoryModel');
 const Product = require('../../models/productModel');
+const Sales = require('../../models/salesModel');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const path = require('path');
+const fs = require('fs');
+const sequelize = require('../../connection/database');
 
 const registerAdmin = async (req, res) => {
     const { first_name, last_name, email, password } = req.body;
@@ -409,6 +412,7 @@ const getOwners = async (req, res) => {
                             name: product.product_name,
                             stock_level: product.stock_level,
                             price: product.price,
+                            image: product.image ? path.join(__dirname, `../public/resources/uploads/owners/${store.owner_id}/stores/${category.store_id}/products/${product.id}/`, product.image) : null,
                             status: product.status,
                             createdAt: moment(product.createdAt).format('YYYY-MM-DD HH:mm'),
                             updatedAt: moment(product.updatedAt).format('YYYY-MM-DD HH:mm'),
@@ -473,6 +477,7 @@ const getOwnerById = async (req, res) => {
                         name: product.product_name,
                         stock_level: product.stock_level,
                         price: product.price,
+                        image: product.image ? path.join(__dirname, `../public/resources/uploads/owners/${store.owner_id}/stores/${category.store_id}/products/${product.id}/`, product.image) : null,
                         status: product.status,
                         createdAt: moment(product.createdAt).format('YYYY-MM-DD HH:mm'),
                         updatedAt: moment(product.updatedAt).format('YYYY-MM-DD HH:mm'),
@@ -489,15 +494,47 @@ const getOwnerById = async (req, res) => {
 };
 
 const deleteOwner = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         const ownerId = req.params.id;
-        const owner = await Owner.findByPk(ownerId);
-        
-        if (!owner) return res.status(404).json({ message: 'Owner not found' });
+        const owner = await Owner.findByPk(ownerId, { transaction });
 
-        await owner.destroy();
-        res.json({ message: 'Owner deleted!' });
+        if (!owner) {
+            await transaction.rollback();
+            return res.status(404).json({ message: 'Owner not found' });
+        }
+
+        const stores = await Store.findAll({ where: { owner_id: ownerId }, transaction });
+
+        for (const store of stores) {
+            const categories = await Category.findAll({ where: { store_id: store.id }, transaction });
+            
+            for (const category of categories) {
+                const products = await Product.findAll({ where: { category_id: category.id }, transaction });
+
+                for (const product of products) {
+                    await Sales.destroy({ where: { product_id: product.id }, transaction });
+                }
+
+                await Product.destroy({ where: { category_id: category.id }, transaction });
+            }
+
+            await Category.destroy({ where: { store_id: store.id }, transaction });
+        }
+
+        await Store.destroy({ where: { owner_id: ownerId }, transaction });
+
+        const ownerImageDir = path.join(__dirname, `../public/resources/uploads/owners/${ownerId}/`);
+        if (fs.existsSync(ownerImageDir)) {
+            fs.rmSync(ownerImageDir, { recursive: true, force: true });
+        }
+
+        await owner.destroy({ transaction });
+
+        await transaction.commit();
+        res.json({ message: 'Owner and all associated data deleted!' });
     } catch (error) {
+        await transaction.rollback();
         res.status(400).json({ error: error.message });
     }
 };

@@ -1,9 +1,11 @@
-const Product = require('../models/productModel');
-const Category = require('../models/categoryModel');
 const Store = require('../models/storeModel');
+const Category = require('../models/categoryModel');
+const Product = require('../models/productModel');
+const Sales = require('../models/salesModel');
 const moment = require('moment');
 const path = require('path');
 const fs = require('fs');
+const sequelize = require('../connection/database');
 
 const createProduct = async (req, res) => {
     const ownerId = req.user.id;
@@ -140,8 +142,11 @@ const updateProduct = async (req, res) => {
             return res.status(404).json({ message: 'Product not found' });
         }
 
-        if (category_id !== undefined) {
-            const category = await Category.findByPk(category_id, {
+        let oldCategoryId = product.category_id;
+        let oldCategoryDir = path.join(__dirname, `../public/resources/uploads/owners/${ownerId}/stores/${product.category.store.id}/categories/${oldCategoryId}/products/${product.id}/`);
+
+        if (category_id !== undefined && category_id !== oldCategoryId) {
+            const newCategory = await Category.findByPk(category_id, {
                 include: {
                     model: Store,
                     as: 'store',
@@ -149,9 +154,20 @@ const updateProduct = async (req, res) => {
                 },
             });
 
-            if (!category) {
+            if (!newCategory) {
                 return res.status(403).json({ message: 'Unauthorized: Category does not belong to the owner' });
             }
+
+            const newCategoryDir = path.join(__dirname, `../public/resources/uploads/owners/${ownerId}/stores/${newCategory.store.id}/categories/${category_id}/products/${product.id}/`);
+
+            if (!fs.existsSync(newCategoryDir)) {
+                fs.mkdirSync(newCategoryDir, { recursive: true });
+            }
+
+            if (fs.existsSync(oldCategoryDir)) {
+                fs.renameSync(oldCategoryDir, newCategoryDir);
+            }
+
             product.category_id = category_id;
         }
 
@@ -168,7 +184,7 @@ const updateProduct = async (req, res) => {
 
             if (oldImage) {
                 const oldImagePath = path.join(productImageDir, oldImage);
-                if (fs.existsSync(oldImage)){
+                if (fs.existsSync(oldImagePath)) {
                     fs.unlinkSync(oldImagePath);
                 }
             }
@@ -184,7 +200,6 @@ const updateProduct = async (req, res) => {
             fs.renameSync(tempFilePath, finalFilePath);
 
             product.image = newFileName;
-
         }
 
         await product.save();
@@ -211,34 +226,40 @@ const updateProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
     const ownerId = req.user.id;
     const { id } = req.params;
+
+    const transaction = await sequelize.transaction();
     try {
         const product = await Product.findByPk(id, {
             include: {
-              model: Category,
-              as: 'category',
-              include: {
-                model: Store,
-                as: 'store',
-                where: { owner_id: ownerId},
-              }
-            }
-          });
+                model: Category,
+                as: 'category',
+                include: {
+                    model: Store,
+                    as: 'store',
+                    where: { owner_id: ownerId },
+                },
+            },
+            transaction
+        });
+
         if (!product) {
+            await transaction.rollback();
             return res.status(404).json({ message: 'Product not found' });
-        };
-
-        const productImageDir = path.join(__dirname, `../public/resources/uploads/owners/${ownerId}/stores/${product.category.store.id}/categories/${product.category_id}/products/${product.id}/`);
-
-        if (product.image) {
-            const imagePath = path.join(productImageDir, product.image);
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
-            }
         }
 
-        await product.destroy();
-        res.json({ message: 'Product deleted successfully' });
+        await Sales.destroy({ where: { product_id: product.id }, transaction });
+
+        const productImageDir = path.join(__dirname, `../public/resources/uploads/owners/${ownerId}/stores/${product.category.store.id}/categories/${product.category_id}/products/${product.id}/`);
+        if (fs.existsSync(productImageDir)) {
+            fs.rmSync(productImageDir, { recursive: true, force: true });
+        }
+
+        await product.destroy({ transaction });
+
+        await transaction.commit();
+        res.json({ message: 'Product and all associated data deleted successfully!' });
     } catch (error) {
+        await transaction.rollback();
         res.status(400).json({ error: error.message });
     }
 };

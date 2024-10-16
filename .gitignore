@@ -129,6 +129,5 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-
-# Ignore resources while in development mode
-public/resources
+##################################################################
+public

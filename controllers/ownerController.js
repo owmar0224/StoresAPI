@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const fs = require('fs');
 const path = require('path');
+const sequelize = require('../connection/database');
 
 const loginOwner = async (req, res) => {
     const { email, password } = req.body;
@@ -96,6 +97,7 @@ const changePassword = async (req, res) => {
                         name: product.product_name,
                         stock_level: product.stock_level,
                         price: product.price,
+                        image: product.image ? path.join(__dirname, `../public/resources/uploads/owners/${store.owner_id}/stores/${category.store_id}/products/${product.id}/`, product.image) : null,
                         status: product.status,
                         createdAt: moment(product.createdAt).format('YYYY-MM-DD HH:mm'),
                         updatedAt: moment(product.updatedAt).format('YYYY-MM-DD HH:mm'),
@@ -152,7 +154,39 @@ const updateOwner = async (req, res) => {
 
         await owner.save();
 
-        const responseOwner = formatOwnerResponse(owner);
+        const formattedStores = (stores || []).map(store =>
+            ({
+                id: store.id,
+                owner_id: store.owner_id,
+                store_name: store.store_name,
+                location: store.location,
+                image: path.join(__dirname, `../public/resources/uploads/owners/${store.owner_id}/stores/${store.id}/`, store.image),
+                status: store.status,
+                createdAt: moment(store.createdAt).format('YYYY-MM-DD HH:mm'),
+                updatedAt: moment(store.updatedAt).format('YYYY-MM-DD HH:mm'),
+                categories: (store.category || []).map(category => ({
+                    id: category.id,
+                    storeId: category.store_id,
+                    name: category.category_name,
+                    image: category.image ? path.join(__dirname, `../public/resources/uploads/owners/${store.owner_id}/stores/${category.store_id}/`, category.image) : null,
+                    status: category.status,
+                    createdAt: moment(category.createdAt).format('YYYY-MM-DD HH:mm'),
+                    updatedAt: moment(category.updatedAt).format('YYYY-MM-DD HH:mm'),
+                    products: (category.product || []).map(product => ({
+                        id: product.id,
+                        name: product.product_name,
+                        stock_level: product.stock_level,
+                        price: product.price,
+                        image: product.image ? path.join(__dirname, `../public/resources/uploads/owners/${store.owner_id}/stores/${category.store_id}/products/${product.id}/`, product.image) : null,
+                        status: product.status,
+                        createdAt: moment(product.createdAt).format('YYYY-MM-DD HH:mm'),
+                        updatedAt: moment(product.updatedAt).format('YYYY-MM-DD HH:mm'),
+                    })),
+                })),
+            })
+            );
+
+        const responseOwner = formatOwnerResponse(owner, formattedStores);
         res.json({ message: 'Owner updated!', owner: responseOwner });
     } catch (error) {
         res.status(400).json({ error: error.message });
