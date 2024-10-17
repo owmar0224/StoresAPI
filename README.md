@@ -276,6 +276,11 @@ Authorization: Bearer <TOKEN>
   - `last_name`: Owner's last name.
   - `image`: Updated image.
 
+#### Reset Password
+- **PUT** `/api/v1/owners/reset-password`
+- **Description**: Resets the Owners password.
+- **Bearer Token**: **owner_token**
+
 ##### Deactivate Owner
 - **PUT** `/api/v1/owners/deactivate`
 - **Description**: Deactivates an Owner account.

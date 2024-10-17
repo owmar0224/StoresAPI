@@ -3,11 +3,12 @@ const Store = require('../models/storeModel');
 const Category = require('../models/categoryModel');
 const Product = require('../models/productModel');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const fs = require('fs');
 const path = require('path');
-const sequelize = require('../connection/database');
 
 const loginOwner = async (req, res) => {
     const { email, password } = req.body;
@@ -193,6 +194,49 @@ const updateOwner = async (req, res) => {
     }
 };
 
+const resetPassword = async (req, res) => {
+    const ownerId = req.user.id;
+
+    try {
+        const owner = await Owner.findOne({ where: { id: ownerId } });
+        if (!owner) {
+            return res.status(404).json({ error: 'No owner found.' });
+        }
+
+        const newGeneratedPassword = crypto.randomBytes(4).toString('hex');
+        const hashedNewPassword = await bcrypt.hash(newGeneratedPassword, 10);
+
+        owner.password = hashedNewPassword;
+        await owner.save();
+
+        const transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: owner.email,
+            subject: 'Password Reset Credentials',
+            text: `Your password has been reset successfully. Your new credentials are as follows:\n\nEmail: ${owner.email}\nPassword: ${newGeneratedPassword}\n\nPlease change your password upon your first login.`
+        };
+
+        try {
+            await transporter.sendMail(mailOptions);
+        } catch (error) {
+            console.error('Error sending email:', error);
+            return res.status(500).json({ error: 'Failed to send new credentials email. Please try again later.' });
+        }
+
+        res.status(200).json({ message: 'Password reset successfully. New credentials have been sent to the provided email.' });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred. Please try again later.' });
+    }
+};
+
 const deactivateOwner = async (req, res) => {
   const ownerId = req.user.id;
 
@@ -229,5 +273,6 @@ module.exports = {
     changePassword,
     getOwnerDetails,
     updateOwner,
+    resetPassword,
     deactivateOwner
 };

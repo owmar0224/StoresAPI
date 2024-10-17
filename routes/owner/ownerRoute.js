@@ -11,6 +11,7 @@ router.post('/login', ownerController.loginOwner);
 router.put('/change-password', passport.authenticate('owner-rule', { session: false }), ownerController.changePassword);
 router.get('/details', passport.authenticate('owner-rule', { session: false }), ownerController.getOwnerDetails);
 router.put('/update', passport.authenticate('owner-rule', { session: false }), upload.single('image'), ownerController.updateOwner);
+router.put('/reset-password', passport.authenticate('owner-rule', { session: false }), ownerController.resetPassword);
 router.put('/deactivate', passport.authenticate('owner-rule', { session: false }), ownerController.deactivateOwner);
 
 module.exports = router;
