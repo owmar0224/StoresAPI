@@ -248,13 +248,12 @@ const getAdminById = async (req, res) => {
 
 const updateAdmin = async (req, res) => {
     try {
-        const { first_name, last_name, email } = req.body;
+        const { first_name, last_name } = req.body;
         const admin = await Admin.findByPk(req.params.id);
         if (!admin) return res.status(404).json({ message: 'Admin not found' });
 
         admin.first_name = first_name !== undefined ? first_name : admin.first_name;
         admin.last_name = last_name !== undefined ? last_name : admin.last_name;
-        admin.email = email !== undefined ? email : admin.email;
         await admin.save();
         
         const formattedAdmin = formatAdminResponse(admin);

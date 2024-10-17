@@ -44,7 +44,7 @@ StoresAPI is a RESTful API developed using Node.js, Express, and Sequelize. It a
 The following environment variables need to be set for the API to function properly. Add them to a `.env` file in the root directory:
 
 ### Server Configuration
-- `PORT=5000`: The port on which the server will run.
+- `PORT`: The port on which the server will run.
 
 ### Database Configuration
 - `DB_HOST`: The database host (e.g., `localhost`).
@@ -184,8 +184,7 @@ Authorization: Bearer <TOKEN>
   ```json
   {
     "first_name": "UpdatedFirstName",
-    "last_name": "UpdatedLastName",
-    "email": "updated@example.com"
+    "last_name": "UpdatedLastName"
   }
   ```
 
@@ -293,9 +292,7 @@ Authorization: Bearer <TOKEN>
 - **Request Body (form-data)**:
   - `store_name`: Name of the store.
   - `location`: Store location.
-  - `
-
-status`: Store status (true/false).
+  - `status`: Store status (true/false).
   - `image`: Store image.
 
 ##### Get All Stores
@@ -424,6 +421,10 @@ status`: Store status (true/false).
   ```json
   {
     "sales": [
+      {
+        "product_id": "product-id",
+        "quantity": 2
+      },
       {
         "product_id": "product-id",
         "quantity": 2
