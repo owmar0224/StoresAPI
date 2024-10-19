@@ -1,6 +1,6 @@
-# StoresAPI - Node.js RESTful API
+# StoresAPI - Node.js Express API
 
-StoresAPI is a RESTful API developed using Node.js, Express, and Sequelize. It allows for managing stores, categories, products, and sales, with functionalities for both **Admin** and **Owner** users.
+StoresAPI is an **Express API** built with **Node.js** and **Sequelize**. It enables the management of stores, categories, products, and sales, with functionalities for both **Admin** and **Owner** users. **Admins** can only manage owners, while **Owners** manage their stores, categories, products, and sales. The API uses JWT for authentication and supports email-based account verification and password recovery.
 
 ## Table of Contents
 - [Installation](#installation)
