@@ -8,7 +8,6 @@ router.get('/all', passport.authenticate('owner-rule', { session: false }), sale
 router.get('/:id', passport.authenticate('owner-rule', { session: false }), salesController.getSaleById);
 router.get('/stores/:store_id', passport.authenticate('owner-rule', { session: false }), salesController.getSalesByStoreId);
 router.get('/products/:product_id', passport.authenticate('owner-rule', { session: false }), salesController.getSalesByProductId);
-// router.get('/total-sales-per-product', passport.authenticate('owner-rule', { session: false }), salesController.getTotalSalesPerProduct);
 router.put('/update/:id', passport.authenticate('owner-rule', { session: false }), salesController.updateSale);
 router.delete('/delete/:id', passport.authenticate('owner-rule', { session: false }), salesController.deleteSale);
 
