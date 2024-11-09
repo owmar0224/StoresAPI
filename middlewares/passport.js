@@ -1,7 +1,8 @@
+require('dotenv').config();
 const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
 const Owner = require('../models/ownerModel');
-const Admin = require('../models/adminModel'); // Assuming a separate Admin model
-require('dotenv').config();
+const Admin = require('../models/adminModel');
+console.log('JWT SECRET:', process.env.JWT_SECRET);
 
 const options = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -11,7 +12,7 @@ const options = {
 // Admin strategy
 const adminStrategy = new JwtStrategy(options, async (jwt_payload, done) => {
   try {
-    const admin = await Admin.findByPk(jwt_payload.id); // Check Admin table
+    const admin = await Admin.findByPk(jwt_payload.id);
     if (admin) {
       return done(null, admin);
     } else {
@@ -25,7 +26,7 @@ const adminStrategy = new JwtStrategy(options, async (jwt_payload, done) => {
 // Owner strategy
 const ownerStrategy = new JwtStrategy(options, async (jwt_payload, done) => {
   try {
-    const owner = await Owner.findByPk(jwt_payload.id); // Check Owner table
+    const owner = await Owner.findByPk(jwt_payload.id);
     if (owner) {
       return done(null, owner);
     } else {
@@ -37,6 +38,6 @@ const ownerStrategy = new JwtStrategy(options, async (jwt_payload, done) => {
 });
 
 module.exports = (passport) => {
-  passport.use('admin-rule', adminStrategy); // Assign a strategy name for admin
-  passport.use('owner-rule', ownerStrategy); // Assign a strategy name for owner
+  passport.use('admin-rule', adminStrategy);
+  passport.use('owner-rule', ownerStrategy);
 };
