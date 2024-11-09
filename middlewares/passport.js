@@ -2,7 +2,6 @@ require('dotenv').config();
 const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
 const Owner = require('../models/ownerModel');
 const Admin = require('../models/adminModel');
-console.log(process.env);
 
 const options = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
