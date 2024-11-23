@@ -21,7 +21,7 @@ StoresAPI is an **Express API** built with **Node.js** and **Sequelize**. It ena
 1. Clone the repository:
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/owmar0224/StoresAPI.git
    cd StoresAPI
    ```
 
